@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include "id_str.h"
 #include "id_mm.h"
+#include "id_us.h"
 #include "ck_cross.h"
 
 #include <ctype.h>
@@ -164,6 +165,8 @@ STR_Token STR_GetToken(STR_ParserState *ps)
 				}
 			}
 			tokenbuf[i++] = c;
+			if (i == ID_STR_MAX_TOKEN_LENGTH)
+				Quit("Token exceeded max length!");
 		}
 		STR_GetCharacter(ps);
 	}
@@ -171,7 +174,11 @@ STR_Token STR_GetToken(STR_ParserState *ps)
 		tok.tokenType = STR_TOK_Ident;
 	{
 		while (STR_PeekCharacter(ps) && !isspace(STR_PeekCharacter(ps)))
+		{
 			tokenbuf[i++] = STR_GetCharacter(ps);
+			if (i == ID_STR_MAX_TOKEN_LENGTH)
+				Quit("Token exceeded max length!");
+		}
 	}
 	tokenbuf[i] = '\0';
 
