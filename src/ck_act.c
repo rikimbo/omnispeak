@@ -263,11 +263,12 @@ bool CK_VAR_ParseAction(STR_ParserState *ps)
 
 	const char *cThink, *cCollide, *cDraw;
 	cThink = STR_GetIdent(ps);
-	cCollide = STR_GetIdent(ps);
-	cDraw = STR_GetIdent(ps);
-
 	act->think = CK_ACT_GetFunction(cThink);
+
+	cCollide = STR_GetIdent(ps);
 	act->collide = CK_ACT_GetColFunction(cCollide);
+
+	cDraw = STR_GetIdent(ps);
 	act->draw = CK_ACT_GetFunction(cDraw);
 
 	const char *nextActionName = STR_GetIdent(ps);
@@ -286,14 +287,14 @@ void CK_VAR_ParseInt(STR_ParserState *ps)
 
 void CK_VAR_ParseString(STR_ParserState *ps)
 {
-	const char *varName = STR_GetIdent(ps);
+	const char *varName = MM_ArenaStrDup(ck_varArena, STR_GetIdent(ps));
 	char stringBuf[4096] = {0};
 	do
 	{
 		const char *val = STR_GetString(ps);
 		strcat(stringBuf, val);
 	} while (STR_PeekToken(ps).tokenType == STR_TOK_String);
-	CK_VAR_SetString(varName, stringBuf);
+	CK_VAR_SetEntry(varName, MM_ArenaStrDup(ck_varArena, stringBuf));
 }
 
 bool CK_VAR_ParseVar(STR_ParserState *ps)
@@ -302,7 +303,6 @@ bool CK_VAR_ParseVar(STR_ParserState *ps)
 
 	if (varType == VAR_EOF)
 	{
-		//MM_ArenaReset(ps->tempArena);
 		return false;
 	}
 
@@ -327,7 +327,6 @@ bool CK_VAR_ParseVar(STR_ParserState *ps)
 		Quit("Unsupported var type.");
 	}
 
-	//MM_ArenaReset(ps->tempArena);
 	return true;
 }
 
@@ -341,12 +340,8 @@ void CK_VAR_LoadVars(const char *filename)
 	parserstate.linecount = 0;
 	parserstate.haveBufferedToken = false;
 
-	parserstate.tempArena = MM_ArenaCreate(4096);
-
 	while (CK_VAR_ParseVar(&parserstate))
 		numVarsParsed++;
 
 	CK_Cross_LogMessage(CK_LOG_MSG_NORMAL, "Parsed %d vars from \"%s\" over %d lines (%d actions created).\n", numVarsParsed, filename, parserstate.linecount, ck_actionsUsed);
-
-	MM_ArenaDestroy(parserstate.tempArena);
 }

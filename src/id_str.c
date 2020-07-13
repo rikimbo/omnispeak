@@ -138,7 +138,6 @@ STR_Token STR_GetToken(STR_ParserState *ps)
 		ps->haveBufferedToken = false;
 		return ps->bufferedToken;
 	}
-	char tokenbuf[ID_STR_MAX_TOKEN_LENGTH];
 	int i = 0;
 	STR_SkipWhitespace(ps);
 	STR_Token tok;
@@ -164,7 +163,7 @@ STR_Token STR_GetToken(STR_ParserState *ps)
 					break;
 				}
 			}
-			tokenbuf[i++] = c;
+			ps->bufferedTokenData[i++] = c;
 			if (i == ID_STR_MAX_TOKEN_LENGTH)
 				Quit("Token exceeded max length!");
 		}
@@ -175,17 +174,16 @@ STR_Token STR_GetToken(STR_ParserState *ps)
 	{
 		while (STR_PeekCharacter(ps) && !isspace(STR_PeekCharacter(ps)))
 		{
-			tokenbuf[i++] = STR_GetCharacter(ps);
+			ps->bufferedTokenData[i++] = STR_GetCharacter(ps);
 			if (i == ID_STR_MAX_TOKEN_LENGTH)
 				Quit("Token exceeded max length!");
 		}
 	}
-	tokenbuf[i] = '\0';
+	ps->bufferedTokenData[i] = '\0';
 
 	// Copy the token into the temp Arena
 	// TODO: Use a range into the input instead
-	const char *value = MM_ArenaStrDup(ps->tempArena, tokenbuf);
-	tok.valuePtr = value;
+	tok.valuePtr = ps->bufferedTokenData;
 	tok.valueLength = i;
 	return tok;
 }

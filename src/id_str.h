@@ -44,9 +44,6 @@ void *STR_LookupEntryWithDefault(STR_Table *tabl, const char *str, void *def);
 void *STR_LookupEntry(STR_Table *tabl, const char *str);
 bool STR_AddEntry(STR_Table *tabl, const char *str, void *value);
 
-
-
-
 #define ID_STR_MAX_TOKEN_LENGTH 1024
 
 typedef enum STR_TokenType
@@ -70,12 +67,13 @@ typedef struct STR_ParserState
 	int dataindex;
 	int datasize;
 	int linecount;
-	ID_MM_Arena *tempArena;
 	// This is a token whose value has been PeekToken()ed.
 	bool haveBufferedToken;
 	STR_Token bufferedToken;
+	char bufferedTokenData[ID_STR_MAX_TOKEN_LENGTH];
 } STR_ParserState;
 
+// Note that the token returned (or String/Ident) is only valid until the next call.
 STR_Token STR_GetToken(STR_ParserState *ps);
 STR_Token STR_PeekToken(STR_ParserState *ps);
 const char *STR_GetString(STR_ParserState *ps);
